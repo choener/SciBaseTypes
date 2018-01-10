@@ -1,7 +1,7 @@
 
--- | A set with two binary operations, one for addition (@splus@), one for
--- multiplication (@smul@). Together with a neutral element for @splus@, named
--- @szero@, and one for @smul@, named @sone@.
+-- | A set with two binary operations, one for addition (@srplus@), one for
+-- multiplication (@srmul@). Together with a neutral element for @srplus@,
+-- named @srzero@, and one for @srmul@, named @srone@.
 
 module Algebra.Structure.SemiRing where
 
@@ -10,18 +10,18 @@ module Algebra.Structure.SemiRing where
 -- | The semiring operations and neutral elements.
 
 class SemiRing a where
-  splus ∷ a → a → a
-  smul  ∷ a → a → a
-  szero ∷ a
-  sone  ∷ a
+  srplus  ∷ a → a → a
+  srmul   ∷ a → a → a
+  srzero  ∷ a
+  srone   ∷ a
 
--- | Unicode variant of @splus@.
+-- | Unicode variant of @srplus@.
 
 (⊕) ∷ SemiRing a ⇒ a → a → a
-(⊕) = splus
+(⊕) = srplus
 
--- | Unicode variant of @smul@.
+-- | Unicode variant of @srmul@.
 
 (⊗) ∷ SemiRing a ⇒ a → a → a
-(⊗) = smul
+(⊗) = srmul
 

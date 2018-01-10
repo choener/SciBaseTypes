@@ -1,7 +1,7 @@
 
 # TODOs
 
-- figure if this all belong in one package
+- figure if this all belongs in one package
 - will be parent dependency for
   - rad-matrix based stuff
   - Bioinformatics / Biobase (natural sciences)

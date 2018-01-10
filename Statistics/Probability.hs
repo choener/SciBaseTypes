@@ -1,10 +1,15 @@
 
 -- | Probability-related types.
+--
+-- TODO instances for serialization and further stuff
+-- TODO vector instances
 
 module Statistics.Probability where
 
 import Control.Lens
 import Numeric.Log
+
+import Algebra.Structure.SemiRing
 
 
 
@@ -17,8 +22,6 @@ data IsNormalized = Normalized | NotNormalized
 -- | @Prob@ wraps a @Double@ that encodes probabilities. If @Prob@ is tagged as
 -- @Normalized@, the contained values are in the range @[0,...,1]@, otherwise
 -- they are in the range @[0,...,∞]@.
---
--- TODO instances for serialization and further stuff
 
 newtype Prob (n ∷ IsNormalized) x = Prob { getProb ∷ x }
   deriving (Eq,Ord,Show,Read)
@@ -31,8 +34,14 @@ deriving instance (Real       x) ⇒ Real       (Prob n x)
 deriving instance (RealFrac   x) ⇒ RealFrac   (Prob n x)
 deriving instance (RealFloat  x) ⇒ RealFloat  (Prob n x)
 
--- | Turns a value in a normalized probability. @error@ if the value is not in
--- the range @[0,...,1]@.
+instance (Num r) ⇒ SemiRing (Prob n r) where
+  srplus = (+)
+  srmul  = (*)
+  srzero = 0
+  srone  = 1
+
+-- | Turns a value into a normalized probability. @error@ if the value is not
+-- in the range @[0,...,1]@.
 
 prob ∷ (Ord x, Num x, Show x) ⇒ x → Prob Normalized x
 prob x
@@ -48,24 +57,34 @@ prob' = Prob
 
 
 
--- * Probability in log space.
+-- * Probability in log space. A number of operations internally cast to @Log@
+-- from @log-domain@, but the values themselves are *not* newtype-wrapped @Log
+-- x@ values. This is because we want to be *explicit* that these are
+-- log-probabilities.
+--
+-- @Log@ numbers in cases like @fromIntegral 1 :: Log Double@ are treated as
+-- not being in the log-domain, hence @fromIntegral performs a @log@
+-- operations.
 
-newtype LogProb (n ∷ IsNormalized) x = LogProb { getLogProb ∷ Log x }
-  deriving (Eq,Ord)
+newtype LogProb (n ∷ IsNormalized) x = LogProb { getLogProb ∷ x }
+  deriving (Eq,Ord,Show)
 
-deriving instance (Enum     (Log x)) ⇒ Enum     (LogProb n x)
-deriving instance (Num      (Log x)) ⇒ Num      (LogProb n x)
---deriving instance (RealFrac (Log x)) ⇒ RealFrac (LogProb n x)
---deriving instance (RealFloat (Log x)) ⇒ RealFloat (LogProb n x)
---deriving instance (Floating x) ⇒ Floating (LogProb n x)
---deriving instance (Precise (Log x)) ⇒ Precise (LogProb n x)
---deriving instance (Fractional x) ⇒ Fractional (Prob n x)
---deriving instance (Real x) ⇒ Real (Prob n x)
+instance (Precise x, RealFloat x) ⇒ Num (LogProb n x) where
+  (+) = withLog2 (+)
+  (*) = withLog2 (*)
+  abs = withLog1 abs
+  signum = withLog1 signum
+  fromInteger = LogProb . fromInteger
+  negate = withLog1 negate
+  (-) = withLog2 (-)
 
+withLog1 ∷ (Log x → Log y) → LogProb n x → LogProb n y
+withLog1 op (LogProb x) = LogProb . ln $ op (Exp x)
+{-# Inline withLog1 #-}
 
-instance (Show x) ⇒ Show (LogProb n x) where
-  show (LogProb (Exp x)) = "LogProb " ++ show x
-
+withLog2 ∷ (Log x → Log y → Log z) → LogProb n x → LogProb n y → LogProb n z
+withLog2 op (LogProb x) (LogProb y) = LogProb . ln $ op (Exp x) (Exp y)
+{-# Inline withLog2 #-}
 
 
 -- * Conversion between probability in linear and log-space.
@@ -73,13 +92,13 @@ instance (Show x) ⇒ Show (LogProb n x) where
 -- | Turn probability into log-probability.
 
 p2lp ∷ (Floating x) ⇒ Prob n x → LogProb n x
-p2lp (Prob x) = LogProb . Exp $ log x
+p2lp (Prob x) = LogProb $ log x
 {-# Inline p2lp #-}
 
 -- | Turn log-probability into probability.
 
 lp2p ∷ (Floating x) ⇒ LogProb n x → Prob n x
-lp2p (LogProb x) = Prob . exp $ ln x
+lp2p (LogProb x) = Prob $ exp x
 {-# Inline lp2p #-}
 
 -- | An isomorphism between @Prob@ and @LogProb@.
