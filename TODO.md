@@ -8,6 +8,11 @@
   - Linguistics (humanities)
   - Lib-SciBaseTypes
 
+- The semiring to use is somewhat complicated, because there is more than one
+  useful semiring. One strategy is to go for a useful encoding of all such
+  possibilities and select the correct one via newtyping, or consider what
+  makes for a useful default semiring.
+
 # mathematics (algebraic structures)
 
 - algebraic structure: semiring

@@ -29,11 +29,14 @@ library
   exposed-modules:
     Algebra.Structure.SemiRing
     StatisticalMechanics.Ensemble
+    Statistics.Odds
     Statistics.Probability
 
   build-depends: base                     >= 4.7      &&  < 5.0
                , lens                     >= 4.0
                , log-domain               >= 0.12
+               , vector                   >= 0.10
+               , vector-th-unbox          >= 0.2
                --
 --               , aeson                    >= 0.8
 --               , binary                   >= 0.7
@@ -45,9 +48,7 @@ library
 --               , primitive                >= 0.5
 --               , storable-tuple           >= 0.0.3
 --               , unordered-containers     >= 0.2.5
---               , vector                   >= 0.10
 --               , vector-binary-instances  >= 0.2
---               , vector-th-unbox          >= 0.2
   ghc-options:
     -O2
     -funbox-strict-fields
