@@ -1,6 +1,9 @@
 
 # TODOs
 
+- consider if having the corresponding semiring explicitly is feasible, since
+  we have to deal with values in dp algebras.
+
 - figure if this all belongs in one package
 - will be parent dependency for
   - rad-matrix based stuff

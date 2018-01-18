@@ -10,6 +10,7 @@ import Control.Lens
 import Numeric.Log
 
 import Algebra.Structure.SemiRing
+import Numeric.LogDomain
 
 
 
