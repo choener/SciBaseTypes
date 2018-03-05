@@ -105,7 +105,38 @@ instance NFData x ⇒ NFData (MinPlus x) where
 instance (Ord x, Num x, NumericLimits x) ⇒ SemiRing (MinPlus x) where
   srplus (MinPlus x) (MinPlus y) = MinPlus $ min x y
   srmul  (MinPlus x) (MinPlus y) = MinPlus $ x + y
-  srzero = MinPlus minFinite
+  srzero = MinPlus maxFinite
+  srone  = 0
+  {-# Inline srplus #-}
+  {-# Inline srmul  #-}
+  {-# Inline srzero #-}
+  {-# Inline srone  #-}
+
+
+
+-- | The tropical MaxPlus SemiRing. It maximizes over the sum.
+
+newtype MaxPlus x = MaxPlus { getMaxPlus ∷ x }
+  deriving (Eq, Ord, Read, Show, Bounded, Generic, Generic1, Num)
+
+derivingUnbox "MaxPlus"
+  [t| forall x . Unbox x ⇒ MaxPlus x → x |]  [| getMaxPlus |]  [| MaxPlus |]
+
+instance NFData x ⇒ NFData (MaxPlus x) where
+  rnf (MaxPlus x) = rnf x
+  {-# Inline rnf #-}
+
+-- |
+--
+-- TODO Shall we have generic instances, or specific ones like @SemiRing
+-- (Viterbi Prob)@?
+--
+-- TODO Consider either a constraint @ProbLike x@ or the above.
+
+instance (Ord x, Num x, NumericLimits x) ⇒ SemiRing (MaxPlus x) where
+  srplus (MaxPlus x) (MaxPlus y) = MaxPlus $ max x y
+  srmul  (MaxPlus x) (MaxPlus y) = MaxPlus $ x + y
+  srzero = MaxPlus minFinite
   srone  = 0
   {-# Inline srplus #-}
   {-# Inline srmul  #-}

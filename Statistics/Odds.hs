@@ -11,6 +11,8 @@ import Data.Serialize (Serialize)
 import Data.Vector.Unboxed.Deriving
 import GHC.Generics (Generic)
 
+import Numeric.Limits
+
 
 
 -- | Odds.
@@ -40,4 +42,10 @@ instance Hashable  DiscLogOdds
 instance NFData DiscLogOdds where
   rnf (DiscLogOdds k) = rnf k
   {-# Inline rnf #-}
+
+instance NumericLimits DiscLogOdds where
+  minFinite = DiscLogOdds minFinite
+  {-# Inline minFinite #-}
+  maxFinite = DiscLogOdds maxFinite
+  {-# Inline maxFinite #-}
 
