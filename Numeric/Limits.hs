@@ -23,14 +23,14 @@ class NumericEpsilon x where
 
 
 instance NumericLimits Word where
-  minFinite = minBound
-  maxFinite = maxBound
+  minFinite = minBound `div` 100000
+  maxFinite = maxBound `div` 100000
   {-# Inline minFinite #-}
   {-# Inline maxFinite #-}
 
 instance NumericLimits Int where
-  minFinite = minBound
-  maxFinite = maxBound
+  minFinite = minBound `div` 100000
+  maxFinite = maxBound `div` 100000
   {-# Inline minFinite #-}
   {-# Inline maxFinite #-}
 
