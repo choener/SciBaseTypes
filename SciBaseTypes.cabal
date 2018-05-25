@@ -38,18 +38,12 @@ library
                , aeson                    >= 1.0
                , binary                   >= 0.7
                , cereal                   >= 0.4
---               , cereal-vector            >= 0.2
---               , containers               >= 0.5
                , deepseq                  >= 1.4
                , hashable                 >= 1.2
                , lens                     >= 4.0
                , log-domain               >= 0.12
                , mtl                      >= 2.0
---               , primitive                >= 0.5
---               , storable-tuple           >= 0.0.3
---               , unordered-containers     >= 0.2.5
                , vector                   >= 0.10
---               , vector-binary-instances  >= 0.2
                , vector-th-unbox          >= 0.2
   ghc-options:
     -O2
@@ -79,12 +73,6 @@ library
 benchmark BenchmarkSciBaseTypes
   build-depends: base
                , SciBaseTypes
---               , containers
---               , criterion            >= 1.0.2
---               , deepseq
---               , mwc-random           >= 0.13
---               , unordered-containers
---               , vector
   hs-source-dirs:
     tests
   main-is:
