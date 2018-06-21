@@ -2,9 +2,8 @@ with (import <nixpkgs> {});
 with haskell.lib;
 
 rec {
-  hsPkgs = haskellPackages.extend (packageSourceOverrides {
-    SciBaseTypes = ./.;
-  });
+  hsSrcSet = {SciBaseTypes = ./.;};
+  hsPkgs = haskellPackages.extend (packageSourceOverrides hsSrcSet);
   hsShell = with hsPkgs; shellFor {
     packages = p: [ p.SciBaseTypes ];
     withHoogle = true;
