@@ -28,6 +28,7 @@ extra-source-files:
 library
   exposed-modules:
     Algebra.Structure.SemiRing
+    Numeric.Discretized
     Numeric.Limits
     Numeric.LogDomain
     StatisticalMechanics.Ensemble
