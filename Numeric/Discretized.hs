@@ -36,13 +36,16 @@ import GHC.Real (Ratio(..))
 -- some thought on in which direction to wrap. Maybe, we want to log-domain
 -- Discretized values, which probably just works.
 
-newtype Discretized (u ∷ Nat) (l ∷ Nat) = Discretized { getDiscretized :: Int }
-  deriving (Eq,Ord,Generic,Show)
+newtype Discretized (u ∷ Nat) (l ∷ Nat) = Discretized { getDiscretized ∷ Int }
+  deriving (Eq,Ord,Generic,Show,Read)
 
 instance (KnownNat u, KnownNat l) ⇒ Num (Discretized u l) where
   Discretized x + Discretized y = Discretized (x+y)
   Discretized x - Discretized y = Discretized (x-y)
-  Discretized x * Discretized y = let u = fromInteger $ natVal (Proxy ∷ Proxy u) in Discretized $ (x*y) `div` (u*u)
+  Discretized x * Discretized y =
+    let u = fromInteger $ natVal @u Proxy
+        l = fromInteger $ natVal @l Proxy
+    in  Discretized $ (x*y*u) `div` l
   abs (Discretized x) = Discretized (abs x)
   signum (Discretized x) = Discretized $ signum x
   fromInteger = Discretized . fromInteger
@@ -55,34 +58,34 @@ instance (KnownNat u, KnownNat l) ⇒ Num (Discretized u l) where
 
 instance (KnownNat u, KnownNat l) ⇒ Fractional (Discretized u l) where
   Discretized x / Discretized y =
-    let u = fromInteger $ natVal (Proxy @u)
-        l = fromInteger $ natVal (Proxy @l)
+    let u = fromInteger $ natVal @u Proxy
+        l = fromInteger $ natVal @l Proxy
     in  Discretized $ (x * l) `div` (y * u)
   {-# Inline (/) #-}
   recip (Discretized x) =
-    let u = fromInteger $ natVal (Proxy @u)
-        l = fromInteger $ natVal (Proxy @l)
+    let u = fromInteger $ natVal @u Proxy
+        l = fromInteger $ natVal @l Proxy
     in  error "need to find approximately ok transformation"
   {-# Inline recip #-}
   fromRational (a :% b) =
-    let u = natVal (Proxy @u)
-        l = natVal (Proxy @l)
+    let u = natVal @u Proxy
+        l = natVal @l Proxy
     in  Discretized . fromInteger $ (a * l) `div` (b * u)
 
-instance (KnownNat u, KnownNat l) => Real (Discretized u l) where
+instance (KnownNat u, KnownNat l) ⇒ Real (Discretized u l) where
   toRational (Discretized d) =
-    let u = natVal (Proxy :: Proxy u)
-        l = natVal (Proxy :: Proxy l)
+    let u = natVal @u Proxy
+        l = natVal @l Proxy
     in  (fromIntegral d * u) % l
   {-# Inline toRational #-}
 
 -- | Discretizes any @Real a@ into the @Discretized@ value. This conversion
 -- is /lossy/!
 
-discretize :: forall a u l . (Real a, KnownNat u, KnownNat l) => a -> Discretized u l
+discretize ∷ forall a u l . (Real a, KnownNat u, KnownNat l) ⇒ a → Discretized u l
 discretize a =
-  let u = natVal (Proxy :: Proxy u)
-      l = natVal (Proxy :: Proxy l)
+  let u = natVal @u Proxy
+      l = natVal @l Proxy
       k = toRational a
   in  Discretized . fromIntegral $ numerator k * l `div` (denominator k * u)
 {-# Inline discretize #-}
