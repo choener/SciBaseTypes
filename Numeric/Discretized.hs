@@ -56,6 +56,14 @@ instance (KnownNat u, KnownNat l) ⇒ Num (Discretized u l) where
   {-# Inline signum #-}
   {-# Inline fromInteger #-}
 
+instance Enum (Discretized u l) where
+  toEnum = Discretized
+  {-# Inline toEnum #-}
+  fromEnum = getDiscretized
+  {-# Inline fromEnum #-}
+
+instance (Enum (Discretized u l), KnownNat u, KnownNat l) ⇒ Integral (Discretized u l) where
+
 instance (KnownNat u, KnownNat l) ⇒ Fractional (Discretized u l) where
   Discretized x / Discretized y =
     let u = fromInteger $ natVal @u Proxy
