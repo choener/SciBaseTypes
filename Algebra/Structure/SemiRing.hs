@@ -126,6 +126,10 @@ instance NFData x ⇒ NFData (MaxPlus x) where
   rnf (MaxPlus x) = rnf x
   {-# Inline rnf #-}
 
+instance NumericLimits x ⇒ NumericLimits (MaxPlus x) where
+  minFinite = MaxPlus minFinite
+  maxFinite = MaxPlus maxFinite
+
 -- |
 --
 -- TODO Shall we have generic instances, or specific ones like @SemiRing

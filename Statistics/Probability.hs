@@ -8,9 +8,12 @@ module Statistics.Probability where
 
 import Control.Lens
 import Numeric.Log
+import Data.Vector.Unboxed.Deriving
+import Data.Vector.Unboxed (Unbox)
 
 import Algebra.Structure.SemiRing
 import Numeric.LogDomain
+import Numeric.Limits
 
 
 
@@ -26,6 +29,9 @@ data IsNormalized = Normalized | NotNormalized
 
 newtype Prob (n ∷ IsNormalized) x = Prob { getProb ∷ x }
   deriving (Eq,Ord,Show,Read)
+
+derivingUnbox "Prob"
+  [t| forall n x. Unbox x ⇒ Prob n x → x |]  [| getProb |]  [| Prob |]
 
 deriving instance (Enum       x) ⇒ Enum       (Prob n x)
 deriving instance (Num        x) ⇒ Num        (Prob n x)
@@ -70,6 +76,9 @@ prob' = Prob
 newtype LogProb (n ∷ IsNormalized) x = LogProb { getLogProb ∷ x }
   deriving (Eq,Ord,Show)
 
+derivingUnbox "LogProb"
+  [t| forall n x. Unbox x ⇒ LogProb n x → x |]  [| getLogProb |]  [| LogProb |]
+
 instance (Precise x, RealFloat x) ⇒ Num (LogProb n x) where
   (+) = withLog2 (+)
   (*) = withLog2 (*)
@@ -78,6 +87,10 @@ instance (Precise x, RealFloat x) ⇒ Num (LogProb n x) where
   fromInteger = LogProb . fromInteger
   negate = withLog1 negate
   (-) = withLog2 (-)
+
+instance (Num d, Fractional d) ⇒ NumericLimits (LogProb n d) where
+  minFinite = LogProb 0
+  maxFinite = LogProb (1/0)
 
 withLog1 ∷ (Log x → Log y) → LogProb n x → LogProb n y
 withLog1 op (LogProb x) = LogProb . ln $ op (Exp x)
