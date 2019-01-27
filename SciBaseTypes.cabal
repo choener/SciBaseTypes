@@ -4,7 +4,7 @@ License:        BSD3
 License-file:   LICENSE
 Author:         Christian Hoener zu Siederdissen
 Maintainer:     choener@bioinf.uni-leipzig.de
-Copyright:      Christian Hoener zu Siederdissen, 2018
+Copyright:      Christian Hoener zu Siederdissen, 2018-2019
 homepage:       https://github.com/choener/SciBaseTypes
 bug-reports:    https://github.com/choener/SciBaseTypes/issues
 Stability:      Experimental
@@ -56,6 +56,7 @@ library
                     , DataKinds
                     , DeriveGeneric
                     , FlexibleContexts
+                    , FlexibleInstances
                     , GeneralizedNewtypeDeriving
                     , MultiParamTypeClasses
                     , PolyKinds
@@ -66,6 +67,7 @@ library
                     , TupleSections
                     , TypeApplications
                     , TypeFamilies
+                    , TypeOperators
                     , UndecidableInstances
                     , UnicodeSyntax
 

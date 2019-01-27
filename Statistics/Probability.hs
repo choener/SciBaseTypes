@@ -43,9 +43,13 @@ deriving instance (RealFloat  x) ⇒ RealFloat  (Prob n x)
 
 instance (Num r) ⇒ SemiRing (Prob n r) where
   srplus = (+)
+  {-# Inline srplus #-}
   srmul  = (*)
+  {-# Inline srmul #-}
   srzero = 0
+  {-# Inline srzero #-}
   srone  = 1
+  {-# Inline srone #-}
 
 -- | Turns a value into a normalized probability. @error@ if the value is not
 -- in the range @[0,...,1]@.
@@ -81,12 +85,29 @@ derivingUnbox "LogProb"
 
 instance (Precise x, RealFloat x) ⇒ Num (LogProb n x) where
   (+) = withLog2 (+)
+  {-# Inline (+) #-}
   (*) = withLog2 (*)
+  {-# Inline (*) #-}
   abs = withLog1 abs
+  {-# Inline abs #-}
   signum = withLog1 signum
+  {-# Inline signum #-}
   fromInteger = LogProb . fromInteger
+  {-# Inline fromInteger #-}
   negate = withLog1 negate
+  {-# Inline negate #-}
   (-) = withLog2 (-)
+  {-# Inline (-) #-}
+
+instance (Precise r, RealFloat r, Num r) ⇒ SemiRing (LogProb n r) where
+  srplus = (+)
+  {-# Inline srplus #-}
+  srmul  = (*)
+  {-# Inline srmul #-}
+  srzero = 0
+  {-# Inline srzero #-}
+  srone  = 1
+  {-# Inline srone #-}
 
 instance (Num d, Fractional d) ⇒ NumericLimits (LogProb n d) where
   minFinite = LogProb 0

@@ -14,10 +14,33 @@ import GHC.Real (Ratio(..))
 
 
 
--- | A discretized value takes a floating point number @n@ and produces @n *
--- fromIntegral l / fromIntegral u@ where both @u@ and @l@ are given as
--- @TypeLits@. I.e. a scaling factor of @ (u / l) = (1 / 100)@ does all
--- calculations in subdivisions of 100.
+-- | Some discretizations are of the type @ln 2 / 2@ (@PAM@ matrices in Blast
+-- for example). Using this type, we can annotate as follows: @Discretized
+-- (RTyLn 2 :% RTyId 2)@.
+
+data RatioTy a = RTyExp a | RTyId a | RTyLn a
+
+class RatioTyConstant a where
+  ratioTyConstant ∷ Proxy a → Ratio Integer
+
+instance (KnownNat k) ⇒ RatioTyConstant (RTyExp (k∷Nat)) where
+  {-# Inline ratioTyConstant #-}
+  ratioTyConstant Proxy = let n = natVal @k Proxy in toRational (exp $ fromInteger n)
+
+instance (KnownNat k) ⇒ RatioTyConstant (RTyId (k∷Nat)) where
+  {-# Inline ratioTyConstant #-}
+  ratioTyConstant Proxy = let n = natVal @k Proxy in toRational n
+
+instance (KnownNat k) ⇒ RatioTyConstant (RTyLn (k∷Nat)) where
+  {-# Inline ratioTyConstant #-}
+  ratioTyConstant Proxy = let n = natVal @k Proxy in toRational (log $ fromInteger n)
+
+-- | A discretized value takes a floating point number @n@ and produces a
+-- discretized value. The actual discretization formula is given on the type
+-- level, freeing us from having to carry around some scaling function.
+--
+-- Typically, one might use types likes @100@, @(100 :% 1)@, or @(RTyLn 2 :%
+-- RTyId 2)@.
 --
 -- The main use of a 'Discretized' value is to enable calculations with 'Int'
 -- while somewhat pretending to use floating point values.
@@ -36,65 +59,68 @@ import GHC.Real (Ratio(..))
 -- some thought on in which direction to wrap. Maybe, we want to log-domain
 -- Discretized values, which probably just works.
 
-newtype Discretized (u ∷ Nat) (l ∷ Nat) = Discretized { getDiscretized ∷ Int }
+newtype Discretized (b ∷ k) = Discretized { getDiscretized ∷ Int }
   deriving (Eq,Ord,Generic,Show,Read)
 
-instance (KnownNat u, KnownNat l) ⇒ Num (Discretized u l) where
+instance (KnownNat u, KnownNat l) ⇒ Num (Discretized ((u∷Nat) :% (l∷Nat))) where
+  {-# Inline (+) #-}
   Discretized x + Discretized y = Discretized (x+y)
+  {-# Inline (-) #-}
   Discretized x - Discretized y = Discretized (x-y)
+  -- TODO it should be possible to generalize this over arbitrary value, or
+  -- replace @KnownNat@ with the above @ratioTyConstant@.
+  {-# Inline (*) #-}
   Discretized x * Discretized y =
     let u = fromInteger $ natVal @u Proxy
         l = fromInteger $ natVal @l Proxy
     in  Discretized $ (x*y*u) `div` l
-  abs (Discretized x) = Discretized (abs x)
-  signum (Discretized x) = Discretized $ signum x
-  fromInteger = Discretized . fromInteger
-  {-# Inline (+) #-}
-  {-# Inline (-) #-}
-  {-# Inline (*) #-}
   {-# Inline abs #-}
+  abs (Discretized x) = Discretized (abs x)
   {-# Inline signum #-}
+  signum (Discretized x) = Discretized $ signum x
   {-# Inline fromInteger #-}
+  fromInteger = Discretized . fromInteger
 
-instance Enum (Discretized u l) where
+instance Enum (Discretized b) where
   toEnum = Discretized
   {-# Inline toEnum #-}
   fromEnum = getDiscretized
   {-# Inline fromEnum #-}
 
-instance (Enum (Discretized u l), KnownNat u, KnownNat l) ⇒ Integral (Discretized u l) where
+-- instance (Enum (Discretized b), KnownNat u, KnownNat l) ⇒ Integral (Discretized u l) where
 
-instance (KnownNat u, KnownNat l) ⇒ Fractional (Discretized u l) where
+instance (KnownNat u, KnownNat l) ⇒ Fractional (Discretized ((u∷Nat) :% (l∷Nat))) where
+  {-# Inline (/) #-}
   Discretized x / Discretized y =
     let u = fromInteger $ natVal @u Proxy
         l = fromInteger $ natVal @l Proxy
     in  Discretized $ (x * l) `div` (y * u)
-  {-# Inline (/) #-}
+  {-# Inline recip #-}
   recip (Discretized x) =
     let u = fromInteger $ natVal @u Proxy
         l = fromInteger $ natVal @l Proxy
     in  error "need to find approximately ok transformation"
-  {-# Inline recip #-}
+  {-# Inline fromRational #-}
   fromRational (a :% b) =
     let u = natVal @u Proxy
         l = natVal @l Proxy
     in  Discretized . fromInteger $ (a * l) `div` (b * u)
 
-instance (KnownNat u, KnownNat l) ⇒ Real (Discretized u l) where
+instance (KnownNat u, KnownNat l) ⇒ Real (Discretized ((u∷Nat) :% (l∷Nat))) where
+  {-# Inline toRational #-}
   toRational (Discretized d) =
     let u = natVal @u Proxy
         l = natVal @l Proxy
     in  (fromIntegral d * u) % l
-  {-# Inline toRational #-}
 
 -- | Discretizes any @Real a@ into the @Discretized@ value. This conversion
--- is /lossy/!
+-- is /lossy/ and uses a type-level rational of @u :% l@!
 
-discretize ∷ forall a u l . (Real a, KnownNat u, KnownNat l) ⇒ a → Discretized u l
-discretize a =
+discretizeRatio ∷ forall a u l . (Real a, KnownNat u, KnownNat l) ⇒ a → Discretized ((u∷Nat) :% (l∷Nat))
+{-# Inline discretizeRatio #-}
+discretizeRatio a =
   let u = natVal @u Proxy
       l = natVal @l Proxy
       k = toRational a
   in  Discretized . fromIntegral $ numerator k * l `div` (denominator k * u)
-{-# Inline discretize #-}
 

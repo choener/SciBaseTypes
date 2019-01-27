@@ -192,3 +192,74 @@ instance
 -- ** Variants of 'Semigroup' structures, that use @NumericLimits@ instead of
 -- @Bounded@.
 
+
+
+-- * Probability Semiring
+--
+-- | The probability semiring is defined on non-negative real numbers and uses
+-- the usual @*@ and @+@ operations. For many "real-world" applications, it
+-- should wrap @log-domain@ numbers for increased numerical stability.
+--
+-- This semiring has some real-world problems, in that we need to assume that
+-- all values are @[0..1]@. Hence we also provide non-normalized probabilities.
+
+newtype Probability x = Probability { getProbability ∷ x }
+  deriving (Eq, Ord, Read, Show, Bounded, Generic, Generic1, Num)
+
+derivingUnbox "Probability"
+  [t| forall x . Unbox x ⇒ Probability x → x |]  [| getProbability |]  [| Probability |]
+
+instance NFData x ⇒ NFData (Probability x) where
+  rnf (Probability x) = rnf x
+  {-# Inline rnf #-}
+
+instance (Num x, NumericLimits x) ⇒ NumericLimits (Probability x) where
+  minFinite = Probability 0
+  maxFinite = Probability 1
+
+-- |
+
+instance (Ord x, Num x, NumericLimits x) ⇒ SemiRing (Probability x) where
+  srplus (Probability x) (Probability y) = Probability $ x + y
+  srmul  (Probability x) (Probability y) = Probability $ x * y
+  srzero = Probability 0
+  srone  = Probability 1
+  {-# Inline srplus #-}
+  {-# Inline srmul  #-}
+  {-# Inline srzero #-}
+  {-# Inline srone  #-}
+
+
+
+-- * Log-semiring.
+--
+-- | 
+
+newtype LogSR x = LogSR { getLogSR ∷ x }
+  deriving (Eq, Ord, Read, Show, Bounded, Generic, Generic1, Num)
+
+derivingUnbox "LogSR"
+  [t| forall x . Unbox x ⇒ LogSR x → x |]  [| getLogSR |]  [| LogSR |]
+
+instance NFData x ⇒ NFData (LogSR x) where
+  rnf (LogSR x) = rnf x
+  {-# Inline rnf #-}
+
+instance (Num x, NumericLimits x) ⇒ NumericLimits (LogSR x) where
+  minFinite = LogSR 0
+  maxFinite = LogSR maxFinite
+
+-- |
+
+instance (Ord x, Num x, Fractional x, NumericLimits x) ⇒ SemiRing (LogSR x) where
+  srplus (LogSR x) (LogSR y)
+    | x <= y    = undefined
+    | otherwise = undefined
+  srmul  (LogSR x) (LogSR y) = LogSR $ x + y
+  srzero = LogSR (negate 1 / 0)
+  srone  = LogSR 0
+  {-# Inline srplus #-}
+  {-# Inline srmul  #-}
+  {-# Inline srzero #-}
+  {-# Inline srone  #-}
+
