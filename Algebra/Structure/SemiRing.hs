@@ -12,6 +12,7 @@ import Data.Semigroup
 import Data.Vector.Unboxed.Deriving
 import Data.Vector.Unboxed (Unbox)
 import GHC.Generics
+import Numeric.Log
 import Unsafe.Coerce
 
 import Numeric.Limits
@@ -258,6 +259,38 @@ instance (Ord x, Num x, Fractional x, NumericLimits x) ⇒ SemiRing (LogSR x) wh
   srmul  (LogSR x) (LogSR y) = LogSR $ x + y
   srzero = LogSR (negate 1 / 0)
   srone  = LogSR 0
+  {-# Inline srplus #-}
+  {-# Inline srmul  #-}
+  {-# Inline srzero #-}
+  {-# Inline srone  #-}
+
+
+
+-- * Semiring on 'Numeric.Log'
+
+instance (Precise a, RealFloat a) ⇒ SemiRing (Log a) where
+  srplus = (+)
+  srmul  = (*)
+  srzero = 0
+  srone  = 1
+  {-# Inline srplus #-}
+  {-# Inline srmul  #-}
+  {-# Inline srzero #-}
+  {-# Inline srone  #-}
+
+
+
+-- * wrapped Num's
+--
+-- TODO if we move to the @semirings@ library, we won't need this ...
+
+newtype Num a = Num { getNum ∷ a }
+
+instance (Precise a, RealFloat a) ⇒ SemiRing (Num a) where
+  srplus (Num a) (Num b) = Num $ a + b
+  srmul  (Num a) (Num b) = Num $ a * b
+  srzero = Num 0
+  srone  = Num 1
   {-# Inline srplus #-}
   {-# Inline srmul  #-}
   {-# Inline srzero #-}

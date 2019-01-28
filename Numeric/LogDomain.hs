@@ -7,15 +7,16 @@
 module Numeric.LogDomain where
 
 import Control.Monad.Except
+import Numeric.Log
 
 
 
 -- | Instances for @LogDomain x@ should be for specific types.
 
 class LogDomain x where
-  -- | The data family to connect a type @x@ with the type @Ln x@ in the
+  -- | The type family to connect a type @x@ with the type @Ln x@ in the
   -- log-domain.
-  data Ln x ∷ *
+  type Ln x ∷ *
   -- | Transport a value in @x@ into the log-domain. @logdom@ should throw an
   -- exception if @log x@ is not valid.
   logdom ∷ (MonadError String m) ⇒ x → m (Ln x)
@@ -23,4 +24,17 @@ class LogDomain x where
   unsafelogdom ∷ x → Ln x
   -- | Transport a value @Ln x@ back into the linear domain @x@.
   lindom ∷ Ln x → x
+
+
+
+instance LogDomain Double where
+  type Ln Double = Log Double
+  {-# Inline logdom #-}
+  logdom x
+    | x < 0     = throwError "log of negative number"
+    | otherwise = return $ unsafelogdom x
+  {-# Inline unsafelogdom #-}
+  unsafelogdom = Exp . log
+  {-# Inline lindom #-}
+  lindom = exp . ln
 
