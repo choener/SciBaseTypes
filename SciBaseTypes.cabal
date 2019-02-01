@@ -1,6 +1,7 @@
+Cabal-version:  2.2
 Name:           SciBaseTypes
 Version:        0.0.0.1
-License:        BSD3
+License:        BSD-3-Clause
 License-file:   LICENSE
 Author:         Christian Hoener zu Siederdissen
 Maintainer:     choener@bioinf.uni-leipzig.de
@@ -10,7 +11,6 @@ bug-reports:    https://github.com/choener/SciBaseTypes/issues
 Stability:      Experimental
 Category:       Data
 Build-type:     Simple
-Cabal-version:  >= 1.10
 tested-with:    GHC == 8.4.4
 Synopsis:       Base types and classes for statistics, sciences and humanities
 Description:
@@ -25,16 +25,7 @@ extra-source-files:
 
 
 
-library
-  exposed-modules:
-    Algebra.Structure.SemiRing
-    Numeric.Discretized
-    Numeric.Limits
-    Numeric.LogDomain
-    StatisticalMechanics.Ensemble
-    Statistics.Odds
-    Statistics.Probability
-
+common deps
   build-depends: base                     >= 4.7      &&  < 5.0
                , aeson                    >= 1.0
                , binary                   >= 0.7
@@ -44,13 +35,14 @@ library
                , lens                     >= 4.0
                , log-domain               >= 0.12
                , mtl                      >= 2.0
+               , semirings                >= 0.3
                , vector                   >= 0.10
                , vector-th-unbox          >= 0.2
+  default-language:
+    Haskell2010
   ghc-options:
     -O2
     -funbox-strict-fields
-  default-language:
-    Haskell2010
   default-extensions: BangPatterns
                     , ConstraintKinds
                     , DataKinds
@@ -73,25 +65,30 @@ library
 
 
 
+library
+  import: deps
+  exposed-modules:
+    Algebra.Structure.Semiring
+    Numeric.Discretized
+    Numeric.Limits
+    Numeric.LogDomain
+    StatisticalMechanics.Ensemble
+    Statistics.Odds
+    Statistics.Probability
+
+
+
 benchmark BenchmarkSciBaseTypes
+  import: deps
   build-depends: base
                , SciBaseTypes
   hs-source-dirs:
     tests
   main-is:
     Benchmark.hs
-  default-language:
-    Haskell2010
   type:
     exitcode-stdio-1.0
-  default-extensions: BangPatterns
-                    , FlexibleContexts
-                    , ScopedTypeVariables
-                    , TypeFamilies
-                    , UnicodeSyntax
   ghc-options:
-    -O2
-    -funbox-strict-fields
     -funfolding-use-threshold1000
     -funfolding-keeness-factor1000
 
@@ -103,16 +100,9 @@ test-suite properties
   main-is:
     properties.hs
   ghc-options:
-    -threaded -rtsopts -with-rtsopts=-N
+    -O0 -threaded -rtsopts -with-rtsopts=-N
   hs-source-dirs:
     tests
-  default-language:
-    Haskell2010
-  default-extensions: BangPatterns
-                    , ScopedTypeVariables
-                    , TemplateHaskell
-                    , TypeFamilies
-                    , UnicodeSyntax
   build-depends: base
                , SciBaseTypes
                , QuickCheck                   >= 2.7

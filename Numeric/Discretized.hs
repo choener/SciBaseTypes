@@ -12,13 +12,15 @@ import GHC.Generics
 import GHC.TypeLits
 import GHC.Real (Ratio(..))
 
+import Algebra.Structure.Semiring
+
 
 
 -- | Some discretizations are of the type @ln 2 / 2@ (@PAM@ matrices in Blast
 -- for example). Using this type, we can annotate as follows: @Discretized
 -- (RTyLn 2 :% RTyId 2)@.
 
-data RatioTy a = RTyExp a | RTyId a | RTyLn a
+data RatioTy a = RTyExp a | RTyId a | RTyLn a | RTyPlus (RatioTy a) (RatioTy a) | RTyTimes (RatioTy a) (RatioTy a)
 
 class RatioTyConstant a where
   ratioTyConstant ∷ Proxy a → Ratio Integer
@@ -34,6 +36,14 @@ instance (KnownNat k) ⇒ RatioTyConstant (RTyId (k∷Nat)) where
 instance (KnownNat k) ⇒ RatioTyConstant (RTyLn (k∷Nat)) where
   {-# Inline ratioTyConstant #-}
   ratioTyConstant Proxy = let n = natVal @k Proxy in toRational (log $ fromInteger n)
+
+instance (RatioTyConstant a, RatioTyConstant b) ⇒ RatioTyConstant (RTyPlus (a∷RatioTy k) (b∷RatioTy k)) where
+  {-# Inline ratioTyConstant #-}
+  ratioTyConstant Proxy = ratioTyConstant @a Proxy + ratioTyConstant @b Proxy
+
+instance (RatioTyConstant a, RatioTyConstant b) ⇒ RatioTyConstant (RTyTimes (a∷RatioTy k) (b∷RatioTy k)) where
+  {-# Inline ratioTyConstant #-}
+  ratioTyConstant Proxy = ratioTyConstant @a Proxy * ratioTyConstant @b Proxy
 
 -- | A discretized value takes a floating point number @n@ and produces a
 -- discretized value. The actual discretization formula is given on the type
@@ -112,6 +122,8 @@ instance (KnownNat u, KnownNat l) ⇒ Real (Discretized ((u∷Nat) :% (l∷Nat))
     let u = natVal @u Proxy
         l = natVal @l Proxy
     in  (fromIntegral d * u) % l
+
+instance Semiring (Discretized k) where
 
 -- | Discretizes any @Real a@ into the @Discretized@ value. This conversion
 -- is /lossy/ and uses a type-level rational of @u :% l@!

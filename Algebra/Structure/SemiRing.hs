@@ -3,12 +3,16 @@
 -- multiplication (@srmul@). Together with a neutral element for @srplus@,
 -- named @srzero@, and one for @srmul@, named @srone@.
 
-module Algebra.Structure.SemiRing where
+module Algebra.Structure.SemiRing
+  ( module Algebra.Structure.Semiring
+  , Data.Semiring (Semiring(..))
+  ) where
 
 import Control.DeepSeq (NFData(..))
 import Data.Coerce
 import Data.Monoid hiding ((<>))
 import Data.Semigroup
+import Data.Semiring (Semiring(..))
 import Data.Vector.Unboxed.Deriving
 import Data.Vector.Unboxed (Unbox)
 import GHC.Generics
@@ -19,30 +23,18 @@ import Numeric.Limits
 
 
 
--- * The 'SemiRing' type class.
-
--- | The semiring operations and neutral elements.
-
-class SemiRing a where
-  srplus  ∷ a → a → a
-  srmul   ∷ a → a → a
-  srzero  ∷ a
-  srone   ∷ a
-
 -- | Unicode variant of @srplus@.
 
 infixl 6 ⊕
-infixl 6 `srplus`
-(⊕) ∷ SemiRing a ⇒ a → a → a
-(⊕) = srplus
+(⊕) ∷ Semiring a ⇒ a → a → a
+(⊕) = plus
 {-# Inline (⊕) #-}
 
 -- | Unicode variant of @srmul@.
 
 infixl 7 ⊗
-infixl 7 `srmul`
-(⊗) ∷ SemiRing a ⇒ a → a → a
-(⊗) = srmul
+(⊗) ∷ Semiring a ⇒ a → a → a
+(⊗) = times
 {-# Inline (⊗) #-}
 
 
@@ -74,15 +66,15 @@ instance NFData x ⇒ NFData (Viterbi x) where
 --
 -- TODO Consider either a constraint @ProbLike x@ or the above.
 
-instance (Ord x, Num x) ⇒ SemiRing (Viterbi x) where
-  srplus (Viterbi x) (Viterbi y) = Viterbi $ max x y
-  srmul  (Viterbi x) (Viterbi y) = Viterbi $ x * y
-  srzero = Viterbi 0
-  srone  = Viterbi 1
-  {-# Inline srplus #-}
-  {-# Inline srmul  #-}
-  {-# Inline srzero #-}
-  {-# Inline srone  #-}
+instance (Ord x, Semiring x) ⇒ Semiring (Viterbi x) where
+  plus  (Viterbi x) (Viterbi y) = Viterbi $ max x y
+  times (Viterbi x) (Viterbi y) = Viterbi $ x `times` y
+  zero = Viterbi zero
+  one  = Viterbi one
+  {-# Inline plus  #-}
+  {-# Inline times #-}
+  {-# Inline zero  #-}
+  {-# Inline one   #-}
 
 -- | The tropical MinPlus SemiRing. It minimizes over the sum.
 
@@ -96,22 +88,23 @@ instance NFData x ⇒ NFData (MinPlus x) where
   rnf (MinPlus x) = rnf x
   {-# Inline rnf #-}
 
+instance NumericLimits x ⇒ NumericLimits (MinPlus x) where
+  minFinite = MinPlus minFinite
+  maxFinite = MinPlus maxFinite
+
 -- |
 --
--- TODO Shall we have generic instances, or specific ones like @SemiRing
--- (Viterbi Prob)@?
---
--- TODO Consider either a constraint @ProbLike x@ or the above.
+-- Be careful, if the numeric limits are hits, underflows, etc will happen.
 
-instance (Ord x, Num x, NumericLimits x) ⇒ SemiRing (MinPlus x) where
-  srplus (MinPlus x) (MinPlus y) = MinPlus $ min x y
-  srmul  (MinPlus x) (MinPlus y) = MinPlus $ x + y
-  srzero = MinPlus maxFinite
-  srone  = 0
-  {-# Inline srplus #-}
-  {-# Inline srmul  #-}
-  {-# Inline srzero #-}
-  {-# Inline srone  #-}
+instance (Ord x, Semiring x, NumericLimits x) ⇒ Semiring (MinPlus x) where
+  plus  (MinPlus x) (MinPlus y) = MinPlus $ min x y
+  times (MinPlus x) (MinPlus y) = MinPlus $ x `plus` y
+  zero = MinPlus maxFinite
+  one  = MinPlus zero
+  {-# Inline plus  #-}
+  {-# Inline times #-}
+  {-# Inline zero  #-}
+  {-# Inline one   #-}
 
 
 
@@ -138,15 +131,15 @@ instance NumericLimits x ⇒ NumericLimits (MaxPlus x) where
 --
 -- TODO Consider either a constraint @ProbLike x@ or the above.
 
-instance (Ord x, Num x, NumericLimits x) ⇒ SemiRing (MaxPlus x) where
-  srplus (MaxPlus x) (MaxPlus y) = MaxPlus $ max x y
-  srmul  (MaxPlus x) (MaxPlus y) = MaxPlus $ x + y
-  srzero = MaxPlus minFinite
-  srone  = 0
-  {-# Inline srplus #-}
-  {-# Inline srmul  #-}
-  {-# Inline srzero #-}
-  {-# Inline srone  #-}
+instance (Ord x, Semiring x, NumericLimits x) ⇒ Semiring (MaxPlus x) where
+  plus  (MaxPlus x) (MaxPlus y) = MaxPlus $ max x y
+  times (MaxPlus x) (MaxPlus y) = MaxPlus $ x `plus` y
+  zero = MaxPlus minFinite
+  one  = MaxPlus zero
+  {-# Inline plus  #-}
+  {-# Inline times #-}
+  {-# Inline zero  #-}
+  {-# Inline one   #-}
 
 
 
@@ -157,14 +150,14 @@ instance (Ord x, Num x, NumericLimits x) ⇒ SemiRing (MaxPlus x) where
 --
 -- It can be used like this:
 -- @
--- srzero ∷ GSemiRing Min Sum Int  == maxBound
--- srone  ∷ GSemiRing Min Sum Int  == 0
+-- zero ∷ GSemiring Min Sum Int  == maxBound
+-- one  ∷ GSemiring Min Sum Int  == 0
 -- @
 --
 -- It is generally useful to still provide explicit instances, since @Min@
 -- requires a @Bounded@ instance.
 
-newtype GSemiRing (zeroMonoid ∷ * → *) (oneMonoid ∷ * → *) (x ∷ *) = GSemiRing { getSemiRing ∷ x }
+newtype GSemiring (zeroMonoid ∷ * → *) (oneMonoid ∷ * → *) (x ∷ *) = GSemiring { getSemiring ∷ x }
   deriving (Eq, Ord, Read, Show, Generic)
 
 instance
@@ -173,126 +166,39 @@ instance
     , Monoid    (zeroMonoid x)
     , Semigroup ( oneMonoid x)
     , Monoid    ( oneMonoid x)
+    , Coercible (zeroMonoid x) (GSemiring zeroMonoid oneMonoid x)
+    , Coercible (oneMonoid x) (GSemiring zeroMonoid oneMonoid x)
     )
-  ⇒ SemiRing (GSemiRing zeroMonoid oneMonoid x) where
-  srplus (GSemiRing x) (GSemiRing y) =
-    let x' ∷ zeroMonoid x = unsafeCoerce x
-        y' ∷ zeroMonoid x = unsafeCoerce y
-    in  unsafeCoerce $ x' <> y'
-  srmul (GSemiRing x) (GSemiRing y) =
-    let x' ∷ oneMonoid x = unsafeCoerce x
-        y' ∷ oneMonoid x = unsafeCoerce y
-    in  unsafeCoerce $ x' <> y'
-  srzero = unsafeCoerce (mempty ∷ zeroMonoid x)
-  srone  = unsafeCoerce (mempty ∷  oneMonoid x)
-  {-# Inline srplus #-}
-  {-# Inline srmul  #-}
-  {-# Inline srzero #-}
-  {-# Inline srone  #-}
-
--- ** Variants of 'Semigroup' structures, that use @NumericLimits@ instead of
--- @Bounded@.
+  ⇒ Semiring (GSemiring zeroMonoid oneMonoid x) where
+  plus (GSemiring x) (GSemiring y) =
+    let x' ∷ zeroMonoid x = coerce x
+        y' ∷ zeroMonoid x = coerce y
+    in  coerce $ x' <> y'
+  times (GSemiring x) (GSemiring y) =
+    let x' ∷ oneMonoid x = coerce x
+        y' ∷ oneMonoid x = coerce y
+    in  coerce $ x' <> y'
+  zero = coerce (mempty ∷ zeroMonoid x)
+  one  = coerce (mempty ∷  oneMonoid x)
+  {-# Inline plus  #-}
+  {-# Inline times #-}
+  {-# Inline zero  #-}
+  {-# Inline one   #-}
 
 
 
--- * Probability Semiring
---
--- | The probability semiring is defined on non-negative real numbers and uses
--- the usual @*@ and @+@ operations. For many "real-world" applications, it
--- should wrap @log-domain@ numbers for increased numerical stability.
---
--- This semiring has some real-world problems, in that we need to assume that
--- all values are @[0..1]@. Hence we also provide non-normalized probabilities.
+-- * Semiring on 'Numeric.Log'. This is an orphan instance, but it can't be
+-- helped much, unless we want to wrap into yet another newtype.
 
-newtype Probability x = Probability { getProbability ∷ x }
-  deriving (Eq, Ord, Read, Show, Bounded, Generic, Generic1, Num)
-
-derivingUnbox "Probability"
-  [t| forall x . Unbox x ⇒ Probability x → x |]  [| getProbability |]  [| Probability |]
-
-instance NFData x ⇒ NFData (Probability x) where
-  rnf (Probability x) = rnf x
-  {-# Inline rnf #-}
-
-instance (Num x, NumericLimits x) ⇒ NumericLimits (Probability x) where
-  minFinite = Probability 0
-  maxFinite = Probability 1
-
--- |
-
-instance (Ord x, Num x, NumericLimits x) ⇒ SemiRing (Probability x) where
-  srplus (Probability x) (Probability y) = Probability $ x + y
-  srmul  (Probability x) (Probability y) = Probability $ x * y
-  srzero = Probability 0
-  srone  = Probability 1
-  {-# Inline srplus #-}
-  {-# Inline srmul  #-}
-  {-# Inline srzero #-}
-  {-# Inline srone  #-}
+instance (Precise a, RealFloat a) ⇒ Semiring (Log a) where
+  plus  = (+)
+  times = (*)
+  zero  = 0
+  one   = 1
+  {-# Inline plus  #-}
+  {-# Inline times #-}
+  {-# Inline zero  #-}
+  {-# Inline one   #-}
 
 
-
--- * Log-semiring.
---
--- | 
-
-newtype LogSR x = LogSR { getLogSR ∷ x }
-  deriving (Eq, Ord, Read, Show, Bounded, Generic, Generic1, Num)
-
-derivingUnbox "LogSR"
-  [t| forall x . Unbox x ⇒ LogSR x → x |]  [| getLogSR |]  [| LogSR |]
-
-instance NFData x ⇒ NFData (LogSR x) where
-  rnf (LogSR x) = rnf x
-  {-# Inline rnf #-}
-
-instance (Num x, NumericLimits x) ⇒ NumericLimits (LogSR x) where
-  minFinite = LogSR 0
-  maxFinite = LogSR maxFinite
-
--- |
-
-instance (Ord x, Num x, Fractional x, NumericLimits x) ⇒ SemiRing (LogSR x) where
-  srplus (LogSR x) (LogSR y)
-    | x <= y    = undefined
-    | otherwise = undefined
-  srmul  (LogSR x) (LogSR y) = LogSR $ x + y
-  srzero = LogSR (negate 1 / 0)
-  srone  = LogSR 0
-  {-# Inline srplus #-}
-  {-# Inline srmul  #-}
-  {-# Inline srzero #-}
-  {-# Inline srone  #-}
-
-
-
--- * Semiring on 'Numeric.Log'
-
-instance (Precise a, RealFloat a) ⇒ SemiRing (Log a) where
-  srplus = (+)
-  srmul  = (*)
-  srzero = 0
-  srone  = 1
-  {-# Inline srplus #-}
-  {-# Inline srmul  #-}
-  {-# Inline srzero #-}
-  {-# Inline srone  #-}
-
-
-
--- * wrapped Num's
---
--- TODO if we move to the @semirings@ library, we won't need this ...
-
-newtype Num a = Num { getNum ∷ a }
-
-instance (Precise a, RealFloat a) ⇒ SemiRing (Num a) where
-  srplus (Num a) (Num b) = Num $ a + b
-  srmul  (Num a) (Num b) = Num $ a * b
-  srzero = Num 0
-  srone  = Num 1
-  {-# Inline srplus #-}
-  {-# Inline srmul  #-}
-  {-# Inline srzero #-}
-  {-# Inline srone  #-}
 
