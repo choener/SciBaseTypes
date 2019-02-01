@@ -1,5 +1,8 @@
 
 -- | Provides newtypes for odds, log-odds, and discretized versions.
+--
+-- TODO This is currently quite ad-hoc and needs better formalization. In
+-- particular in terms of wrapping and usage of @Num@ and @Semiring@.
 
 module Statistics.Odds where
 
@@ -11,6 +14,8 @@ import Data.Serialize (Serialize)
 import Data.Vector.Unboxed.Deriving
 import GHC.Generics (Generic)
 
+import Algebra.Structure.Semiring
+import Numeric.Discretized
 import Numeric.Limits
 
 
@@ -20,30 +25,39 @@ import Numeric.Limits
 newtype Odds = Odds { getOdds ∷ Double }
   deriving (Generic,Eq,Ord,Show,Read,Num)
 
+deriving instance Semiring Odds
+
+
+
 -- | Encodes log-odds that have been rounded or clamped to integral numbers.
 -- One advantage this provides is more efficient "maximum/minimum" calculations
 -- compared to using @Double@s.
 --
 -- Note that these are "explicit" log-odds. Each numeric operation uses the
--- underlying operation on @Int@.
+-- underlying operation on @Int@. If you want automatic handling, choose @Log
+-- Odds@.
 
-newtype DiscLogOdds = DiscLogOdds { getDiscLogOdds ∷ Int }
-  deriving (Generic,Eq,Ord,Show,Read,Num)
+newtype DiscLogOdds (t∷k) = DiscLogOdds { getDiscLogOdds ∷ Discretized t }
+  deriving (Generic,Eq,Ord,Show,Read)
+
+deriving instance (Num (Discretized (t∷k))) ⇒ Num (DiscLogOdds t)
+
+deriving instance (Semiring (Discretized (t∷k))) ⇒ Semiring (DiscLogOdds t)
 
 derivingUnbox "DiscretizedLogOdds"
-  [t| DiscLogOdds → Int |]  [| getDiscLogOdds |]  [| DiscLogOdds |]
+  [t| forall t . DiscLogOdds t → Int |]  [| getDiscretized . getDiscLogOdds |]  [| DiscLogOdds . Discretized |]
 
-instance Binary    DiscLogOdds
-instance Serialize DiscLogOdds
-instance FromJSON  DiscLogOdds
-instance ToJSON    DiscLogOdds
-instance Hashable  DiscLogOdds
+instance Binary    (DiscLogOdds t)
+instance Serialize (DiscLogOdds t)
+instance FromJSON  (DiscLogOdds t)
+instance ToJSON    (DiscLogOdds t)
+instance Hashable  (DiscLogOdds t)
 
-instance NFData DiscLogOdds where
+instance (NFData (Discretized t)) ⇒ NFData (DiscLogOdds t) where
   rnf (DiscLogOdds k) = rnf k
   {-# Inline rnf #-}
 
-instance NumericLimits DiscLogOdds where
+instance (NumericLimits (Discretized t)) ⇒ NumericLimits (DiscLogOdds t) where
   minFinite = DiscLogOdds minFinite
   {-# Inline minFinite #-}
   maxFinite = DiscLogOdds maxFinite

@@ -5,12 +5,18 @@
 module Numeric.Discretized where
 
 import Control.Applicative
+import Control.DeepSeq (NFData(..))
+import Data.Aeson (FromJSON,ToJSON)
+import Data.Binary (Binary)
+import Data.Hashable (Hashable)
 import Data.Proxy
 import Data.Ratio
+import Data.Serialize (Serialize)
+import Data.Vector.Unboxed.Deriving
 import Debug.Trace
 import GHC.Generics
-import GHC.TypeLits
 import GHC.Real (Ratio(..))
+import GHC.TypeLits
 
 import Algebra.Structure.Semiring
 
@@ -19,8 +25,12 @@ import Algebra.Structure.Semiring
 -- | Some discretizations are of the type @ln 2 / 2@ (@PAM@ matrices in Blast
 -- for example). Using this type, we can annotate as follows: @Discretized
 -- (RTyLn 2 :% RTyId 2)@.
+--
+-- One may use @Unknown@ if the scale is not known. For example, the blast
+-- matrices use different scales internally and one needs to read the header to
+-- get the scale.
 
-data RatioTy a = RTyExp a | RTyId a | RTyLn a | RTyPlus (RatioTy a) (RatioTy a) | RTyTimes (RatioTy a) (RatioTy a)
+data RatioTy a = RTyExp a | RTyId a | RTyLn a | RTyPlus (RatioTy a) (RatioTy a) | RTyTimes (RatioTy a) (RatioTy a) | Unknown
 
 class RatioTyConstant a where
   ratioTyConstant ∷ Proxy a → Ratio Integer
@@ -71,6 +81,19 @@ instance (RatioTyConstant a, RatioTyConstant b) ⇒ RatioTyConstant (RTyTimes (a
 
 newtype Discretized (b ∷ k) = Discretized { getDiscretized ∷ Int }
   deriving (Eq,Ord,Generic,Show,Read)
+
+derivingUnbox "Discretized"
+  [t| forall t . Discretized t → Int |]  [| getDiscretized |]  [| Discretized |]
+
+instance NFData (Discretized t) where
+  rnf (Discretized k) = rnf k
+  {-# Inline rnf #-}
+
+instance Binary    (Discretized t)
+instance Serialize (Discretized t)
+instance FromJSON  (Discretized t)
+instance ToJSON    (Discretized t)
+instance Hashable  (Discretized t)
 
 instance (KnownNat u, KnownNat l) ⇒ Num (Discretized ((u∷Nat) :% (l∷Nat))) where
   {-# Inline (+) #-}
