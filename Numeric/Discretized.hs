@@ -19,6 +19,7 @@ import GHC.Real (Ratio(..))
 import GHC.TypeLits
 
 import Algebra.Structure.Semiring
+import Numeric.Limits
 
 
 
@@ -95,6 +96,18 @@ instance FromJSON  (Discretized t)
 instance ToJSON    (Discretized t)
 instance Hashable  (Discretized t)
 
+instance Num (Discretized Unknown) where
+  Discretized x + Discretized y = Discretized $ x+y
+  Discretized x - Discretized y = Discretized $ x-y
+  (*) = error "Discretized Unknown does not admit (*)"
+  abs (Discretized x) = Discretized $ abs x
+  signum (Discretized x) = Discretized $ signum x
+  fromInteger = error "Discretized Unknown does not admit fromInteger"
+  {-# Inline (+) #-}
+  {-# Inline (-) #-}
+  {-# Inline abs #-}
+  {-# Inline signum #-}
+
 instance (KnownNat u, KnownNat l) ⇒ Num (Discretized ((u∷Nat) :% (l∷Nat))) where
   {-# Inline (+) #-}
   Discretized x + Discretized y = Discretized (x+y)
@@ -112,7 +125,10 @@ instance (KnownNat u, KnownNat l) ⇒ Num (Discretized ((u∷Nat) :% (l∷Nat)))
   {-# Inline signum #-}
   signum (Discretized x) = Discretized $ signum x
   {-# Inline fromInteger #-}
-  fromInteger = Discretized . fromInteger
+  fromInteger x =
+    let u = fromInteger $ natVal @u Proxy
+        l = fromInteger $ natVal @l Proxy
+    in  Discretized $ (fromInteger x*u) `div` l
 
 instance Enum (Discretized b) where
   toEnum = Discretized
@@ -155,6 +171,12 @@ instance (Num (Discretized k)) ⇒ Semiring (Discretized k) where
   {-# Inline times #-}
   {-# Inline zero  #-}
   {-# Inline one   #-}
+
+instance (NumericLimits (Discretized t)) where
+  minFinite = Discretized minFinite
+  {-# Inline minFinite #-}
+  maxFinite = Discretized maxFinite
+  {-# Inline maxFinite #-}
 
 -- | Discretizes any @Real a@ into the @Discretized@ value. This conversion
 -- is /lossy/ and uses a type-level rational of @u :% l@!
