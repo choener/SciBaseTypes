@@ -3,9 +3,9 @@
 -- multiplication (@srmul@). Together with a neutral element for @srplus@,
 -- named @srzero@, and one for @srmul@, named @srone@.
 
-module Algebra.Structure.SemiRing
+module Algebra.Structure.Semiring
   ( module Algebra.Structure.Semiring
-  , Data.Semiring (Semiring(..))
+  , Data.Semiring.Semiring (..)
   ) where
 
 import Control.DeepSeq (NFData(..))

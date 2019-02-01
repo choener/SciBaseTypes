@@ -123,7 +123,15 @@ instance (KnownNat u, KnownNat l) ⇒ Real (Discretized ((u∷Nat) :% (l∷Nat))
         l = natVal @l Proxy
     in  (fromIntegral d * u) % l
 
-instance Semiring (Discretized k) where
+instance (Num (Discretized k)) ⇒ Semiring (Discretized k) where
+  plus = (+)
+  times = (*)
+  zero = 0
+  one = 1
+  {-# Inline plus  #-}
+  {-# Inline times #-}
+  {-# Inline zero  #-}
+  {-# Inline one   #-}
 
 -- | Discretizes any @Real a@ into the @Discretized@ value. This conversion
 -- is /lossy/ and uses a type-level rational of @u :% l@!
