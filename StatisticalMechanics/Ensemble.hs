@@ -44,5 +44,8 @@ class StateProbability a where
 
 instance StateProbability Double where
   stateProbability kT x = Prob . exp . negate $ x/kT
-  stateLogProbability kT x = Exp . Prob . {- log . exp . -} negate $ x/kT
+  {-# Inline stateProbability #-}
+  --stateLogProbability kT x = Exp . log . Prob . exp . negate $ x/kT
+  stateLogProbability kT x = Exp . Prob . negate $ x/kT
+  {-# Inline stateLogProbability #-}
 

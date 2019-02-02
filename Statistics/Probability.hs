@@ -7,9 +7,10 @@
 module Statistics.Probability where
 
 import Control.Lens
-import Numeric.Log
+import Data.Char (chr)
 import Data.Vector.Unboxed.Deriving
 import Data.Vector.Unboxed (Unbox)
+import Numeric.Log
 
 import Algebra.Structure.Semiring
 import Numeric.LogDomain
@@ -67,6 +68,15 @@ prob' ∷ (Ord x, Num x, Show x) ⇒ x → Probability NotNormalized x
 prob' = Prob
 {-# Inline prob' #-}
 
+-- | This simple function represents probabilities with characters between '0'
+-- @0.0 -- 0.05@ up to '9' @0.85 -- 0.95@ and finally '*' for @>0.95@.
+
+probabilityToChar ∷ (Num k, RealFrac k) ⇒ Probability Normalized k → Char
+probabilityToChar (Prob p')
+  | i >= 10 = '*'
+  | otherwise = chr $ 48 + i
+  where p = max 0.0 $ min p' 1.0
+        i = round $ p * 10
 
 
 -- -- * Probability in log space. A number of operations internally cast to @Log@
