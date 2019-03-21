@@ -95,6 +95,7 @@ benchmark BenchmarkSciBaseTypes
 
 
 test-suite properties
+  import: deps
   type:
     exitcode-stdio-1.0
   main-is:
