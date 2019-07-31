@@ -41,8 +41,9 @@ newtype DiscLogOdds (t∷k) = DiscLogOdds { getDiscLogOdds ∷ Discretized t }
   deriving (Generic,Eq,Ord,Show,Read)
 
 deriving instance (Num (Discretized (t∷k))) ⇒ Num (DiscLogOdds t)
-
 deriving instance (Semiring (Discretized (t∷k))) ⇒ Semiring (DiscLogOdds t)
+deriving instance (Fractional (Discretized (t∷k))) ⇒ Fractional (DiscLogOdds t)
+deriving instance (Real (Discretized (t∷k))) ⇒ Real (DiscLogOdds t)
 
 derivingUnbox "DiscretizedLogOdds"
   [t| forall t . DiscLogOdds t → Int |]  [| getDiscretized . getDiscLogOdds |]  [| DiscLogOdds . Discretized |]

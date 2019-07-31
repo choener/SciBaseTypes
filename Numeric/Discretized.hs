@@ -8,6 +8,7 @@ import Control.Applicative
 import Control.DeepSeq (NFData(..))
 import Data.Aeson (FromJSON,ToJSON)
 import Data.Binary (Binary)
+import Data.Coerce
 import Data.Hashable (Hashable)
 import Data.Proxy
 import Data.Ratio
@@ -82,6 +83,10 @@ instance (RatioTyConstant a, RatioTyConstant b) ⇒ RatioTyConstant (RTyTimes (a
 
 newtype Discretized (b ∷ k) = Discretized { getDiscretized ∷ Int }
   deriving (Eq,Ord,Generic,Show,Read)
+
+knowDiscretized ∷ Discretized Unknown → Discretized t
+{-# Inline knowDiscretized #-}
+knowDiscretized = coerce
 
 derivingUnbox "Discretized"
   [t| forall t . Discretized t → Int |]  [| getDiscretized |]  [| Discretized |]
