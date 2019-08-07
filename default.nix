@@ -4,14 +4,16 @@
 }:
 mkDerivation {
   pname = "SciBaseTypes";
-  version = "0.0.0.1";
+  version = "0.1.0.0";
   src = ./.;
   libraryHaskellDepends = [
     aeson base binary cereal deepseq hashable lens log-domain mtl
     semirings vector vector-th-unbox
   ];
   testHaskellDepends = [
-    base QuickCheck tasty tasty-quickcheck tasty-th
+    aeson base binary cereal deepseq hashable lens log-domain mtl
+    QuickCheck semirings tasty tasty-quickcheck tasty-th vector
+    vector-th-unbox
   ];
   benchmarkHaskellDepends = [
     aeson base binary cereal deepseq hashable lens log-domain mtl
