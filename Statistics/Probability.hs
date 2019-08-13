@@ -6,10 +6,12 @@
 
 module Statistics.Probability where
 
+import Control.DeepSeq
 import Control.Lens
 import Data.Char (chr)
 import Data.Vector.Unboxed.Deriving
 import Data.Vector.Unboxed (Unbox)
+import GHC.Generics(Generic)
 import Numeric.Log
 
 import Algebra.Structure.Semiring
@@ -29,7 +31,9 @@ data IsNormalized = Normalized | NotNormalized
 -- they are in the range @[0,...,∞]@.
 
 newtype Probability (n ∷ IsNormalized) x = Prob { getProb ∷ x }
-  deriving (Eq,Ord,Show,Read)
+  deriving (Eq,Ord,Show,Read,Generic)
+
+instance (NFData x) ⇒ NFData (Probability n x)
 
 derivingUnbox "Probability"
   [t| forall n x. Unbox x ⇒ Probability n x → x |]  [| getProb |]  [| Prob |]

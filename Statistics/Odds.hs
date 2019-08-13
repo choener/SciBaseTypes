@@ -25,6 +25,8 @@ import Numeric.Limits
 newtype Odds = Odds { getOdds ∷ Double }
   deriving (Generic,Eq,Ord,Show,Read,Num)
 
+instance NFData Odds
+
 deriving instance Semiring Odds
 
 
