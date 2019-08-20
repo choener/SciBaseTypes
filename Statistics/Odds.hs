@@ -7,7 +7,7 @@
 module Statistics.Odds where
 
 import Control.DeepSeq (NFData(..))
-import Data.Aeson (FromJSON,ToJSON)
+import Data.Aeson (FromJSON(..),ToJSON(..))
 import Data.Binary (Binary)
 import Data.Hashable (Hashable)
 import Data.Serialize (Serialize)
@@ -52,9 +52,13 @@ derivingUnbox "DiscretizedLogOdds"
 
 instance Binary    (DiscLogOdds t)
 instance Serialize (DiscLogOdds t)
-instance FromJSON  (DiscLogOdds t)
-instance ToJSON    (DiscLogOdds t)
 instance Hashable  (DiscLogOdds t)
+
+instance ToJSON (Discretized t) ⇒ ToJSON (DiscLogOdds t) where
+  toJSON = toJSON . getDiscLogOdds
+
+instance FromJSON (Discretized t) ⇒ FromJSON  (DiscLogOdds t) where
+  parseJSON = fmap DiscLogOdds . parseJSON
 
 instance (NFData (Discretized t)) ⇒ NFData (DiscLogOdds t) where
   rnf (DiscLogOdds k) = rnf k

@@ -8,6 +8,7 @@ module Statistics.Probability where
 
 import Control.DeepSeq
 import Control.Lens
+import Data.Aeson
 import Data.Char (chr)
 import Data.Vector.Unboxed.Deriving
 import Data.Vector.Unboxed (Unbox)
@@ -46,6 +47,12 @@ deriving instance (Real       x) ⇒ Real       (Probability n x)
 deriving instance (RealFrac   x) ⇒ RealFrac   (Probability n x)
 deriving instance (RealFloat  x) ⇒ RealFloat  (Probability n x)
 deriving instance (Precise    x) ⇒ Precise    (Probability n x)
+
+instance ToJSON x ⇒ ToJSON (Probability n x) where
+  toJSON = toJSON . getProb
+
+instance FromJSON x ⇒ FromJSON (Probability n x) where
+  parseJSON = fmap Prob . parseJSON
 
 instance (Num r) ⇒ Semiring (Probability n r) where
   plus  = (+)

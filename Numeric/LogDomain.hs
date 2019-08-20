@@ -42,6 +42,7 @@ instance LogDomain Double where
   lindom = exp . ln
 
 
+
 -- | @log-sum-exp@ for streams, without incurring examining the stream twice,
 -- but with the potential for numeric problems. In pricinple, the numeric error
 -- of this function should be better than individual binary function

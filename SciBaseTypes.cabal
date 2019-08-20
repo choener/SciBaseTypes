@@ -19,16 +19,16 @@ Description:
 
 
 
+extra-source-files:
+  changelog.md
+  README.md
+
+
+
 flag debugdump
   description:  Enable dumping intermediate / core files
   default:      False
   manual:       True
-
-
-
-extra-source-files:
-  changelog.md
-  README.md
 
 
 

@@ -103,6 +103,12 @@ instance Binary    (Discretized t)
 instance Serialize (Discretized t)
 instance Hashable  (Discretized t)
 
+instance (KnownNat k, KnownNat l) ⇒ ToJSON (Discretized (k :% l)) where
+  toJSON = toJSON . fromRational @Double . toRational
+
+instance (KnownNat k, KnownNat l) ⇒ FromJSON (Discretized (k :% l)) where
+  parseJSON = fmap (fromRational . toRational @Double) . parseJSON
+
 instance Num (Discretized Unknown) where
   Discretized x + Discretized y = Discretized $ x+y
   Discretized x - Discretized y = Discretized $ x-y
