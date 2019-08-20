@@ -7,8 +7,10 @@
 module Numeric.LogDomain where
 
 import Control.Monad.Except
-import Numeric.Log
+import Numeric.Log as NL
 import qualified Data.Vector.Fusion.Stream.Monadic as SM
+import qualified Data.Vector.Fusion.Util as SM
+import Debug.Trace
 
 
 
@@ -66,10 +68,4 @@ logsumexpS (SM.Stream step s0) = lseLoop0 SM.SPEC s0
       SM.Done        → return $ m + log acc
       SM.Skip    sA' → lseLoopAcc SM.SPEC m acc sA'
       SM.Yield z sA' → lseLoopAcc SM.SPEC m (acc + exp (z-m)) sA'
-
-
-
--- testlse ∷ Double → IO Double
--- {-# NoInline testlse #-}
--- testlse frm = logsumexpS (+) 0 $ SM.enumFromTo frm (frm+10)
 
