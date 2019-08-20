@@ -6,7 +6,7 @@ module Numeric.Discretized where
 
 import Control.Applicative
 import Control.DeepSeq (NFData(..))
-import Data.Aeson (FromJSON,ToJSON)
+import Data.Aeson (FromJSON(..),ToJSON(..))
 import Data.Binary (Binary)
 import Data.Coerce
 import Data.Hashable (Hashable)
@@ -101,8 +101,6 @@ instance NFData (Discretized t) where
 
 instance Binary    (Discretized t)
 instance Serialize (Discretized t)
-instance FromJSON  (Discretized t)
-instance ToJSON    (Discretized t)
 instance Hashable  (Discretized t)
 
 instance Num (Discretized Unknown) where

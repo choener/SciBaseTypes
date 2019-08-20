@@ -9,6 +9,7 @@ module Algebra.Structure.Semiring
   ) where
 
 import Control.DeepSeq (NFData(..))
+import Data.Aeson
 import Data.Coerce
 import Data.Monoid hiding ((<>))
 import Data.Semigroup
@@ -59,6 +60,14 @@ instance NFData x ⇒ NFData (Viterbi x) where
   rnf (Viterbi x) = rnf x
   {-# Inline rnf #-}
 
+instance (ToJSON x) ⇒ ToJSON (Viterbi x) where
+  toJSON = toJSON . getViterbi
+
+instance (FromJSON x) ⇒ FromJSON (Viterbi x) where
+  parseJSON = fmap Viterbi . parseJSON
+
+
+
 -- |
 --
 -- TODO Shall we have generic instances, or specific ones like @SemiRing
@@ -87,6 +96,12 @@ derivingUnbox "MinPlus"
 instance NFData x ⇒ NFData (MinPlus x) where
   rnf (MinPlus x) = rnf x
   {-# Inline rnf #-}
+
+instance (ToJSON x) ⇒ ToJSON (MinPlus x) where
+  toJSON = toJSON . getMinPlus
+
+instance (FromJSON x) ⇒ FromJSON (MinPlus x) where
+  parseJSON = fmap MinPlus . parseJSON
 
 instance NumericLimits x ⇒ NumericLimits (MinPlus x) where
   minFinite = MinPlus minFinite
@@ -119,6 +134,12 @@ derivingUnbox "MaxPlus"
 instance NFData x ⇒ NFData (MaxPlus x) where
   rnf (MaxPlus x) = rnf x
   {-# Inline rnf #-}
+
+instance (ToJSON x) ⇒ ToJSON (MaxPlus x) where
+  toJSON = toJSON . getMaxPlus
+
+instance (FromJSON x) ⇒ FromJSON (MaxPlus x) where
+  parseJSON = fmap MaxPlus . parseJSON
 
 instance NumericLimits x ⇒ NumericLimits (MaxPlus x) where
   minFinite = MaxPlus minFinite
@@ -163,6 +184,12 @@ newtype GSemiring (zeroMonoid ∷ * → *) (oneMonoid ∷ * → *) (x ∷ *) = G
 instance NFData x ⇒ NFData (GSemiring zM oM x) where
   {-# Inline rnf #-}
   rnf (GSemiring x) = rnf x
+
+instance (ToJSON x) ⇒ ToJSON (GSemiring z o x) where
+  toJSON = toJSON . getSemiring
+
+instance (FromJSON x) ⇒ FromJSON (GSemiring z o x) where
+  parseJSON = fmap GSemiring . parseJSON
 
 instance
   forall zeroMonoid oneMonoid x
