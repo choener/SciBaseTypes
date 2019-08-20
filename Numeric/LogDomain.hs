@@ -8,6 +8,7 @@ module Numeric.LogDomain where
 
 import Control.Monad.Except
 import Numeric.Log
+import qualified Data.Vector.Fusion.Stream.Monadic as SM
 
 
 
@@ -37,4 +38,21 @@ instance LogDomain Double where
   unsafelogdom = Exp . log
   {-# Inline lindom #-}
   lindom = exp . ln
+
+
+-- | @log-sum-exp@ for streams, without incurring examining the stream twice,
+-- but with the potential for numeric problems.
+
+lseStream ∷ (a → a → a) → a → SM.Stream m a → a
+{-# Inline lseStream #-}
+lseStream mplus mzero = finalize . SM.foldl' go (LSEzero mzero) where
+  go (LSEzero !z   ) x = LSEone x
+--  go (LSEone  !o   ) x = LSEacc (o x
+--  go (LSEtwo  !o !t) x = LSEacc (max o t) 
+
+data LSE a
+  = LSEzero
+  | LSEone !a
+--  | LSEtwo !a !a
+  | LESacc !a !a
 

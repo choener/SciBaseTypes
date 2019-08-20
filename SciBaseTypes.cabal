@@ -11,7 +11,7 @@ bug-reports:    https://github.com/choener/SciBaseTypes/issues
 Stability:      Experimental
 Category:       Data
 Build-type:     Simple
-tested-with:    GHC == 8.4.4
+tested-with:    GHC == 8.6.4
 Synopsis:       Base types and classes for statistics, sciences and humanities
 Description:
                 This library provides a set of basic types and classes for

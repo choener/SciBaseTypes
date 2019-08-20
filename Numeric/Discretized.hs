@@ -37,6 +37,10 @@ data RatioTy a = RTyExp a | RTyId a | RTyLn a | RTyPlus (RatioTy a) (RatioTy a) 
 class RatioTyConstant a where
   ratioTyConstant ∷ Proxy a → Ratio Integer
 
+instance (KnownNat k, KnownNat l) ⇒ RatioTyConstant (k :% l) where
+  {-# Inline ratioTyConstant #-}
+  ratioTyConstant Proxy = let k = natVal @k Proxy; l = natVal @l Proxy in  k :% l
+
 instance (KnownNat k) ⇒ RatioTyConstant (RTyExp (k∷Nat)) where
   {-# Inline ratioTyConstant #-}
   ratioTyConstant Proxy = let n = natVal @k Proxy in toRational (exp $ fromInteger n)
@@ -84,9 +88,9 @@ instance (RatioTyConstant a, RatioTyConstant b) ⇒ RatioTyConstant (RTyTimes (a
 newtype Discretized (b ∷ k) = Discretized { getDiscretized ∷ Int }
   deriving (Eq,Ord,Generic,Show,Read)
 
-knowDiscretized ∷ Discretized Unknown → Discretized t
-{-# Inline knowDiscretized #-}
-knowDiscretized = coerce
+fromUnknown ∷ Discretized Unknown → Discretized t
+{-# Inline fromUnknown #-}
+fromUnknown = coerce
 
 derivingUnbox "Discretized"
   [t| forall t . Discretized t → Int |]  [| getDiscretized |]  [| Discretized |]

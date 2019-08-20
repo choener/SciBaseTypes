@@ -160,6 +160,10 @@ instance (Ord x, Semiring x, NumericLimits x) ⇒ Semiring (MaxPlus x) where
 newtype GSemiring (zeroMonoid ∷ * → *) (oneMonoid ∷ * → *) (x ∷ *) = GSemiring { getSemiring ∷ x }
   deriving (Eq, Ord, Read, Show, Generic)
 
+instance NFData x ⇒ NFData (GSemiring zM oM x) where
+  {-# Inline rnf #-}
+  rnf (GSemiring x) = rnf x
+
 instance
   forall zeroMonoid oneMonoid x
   . ( Semigroup (zeroMonoid x)
@@ -199,6 +203,4 @@ instance (Precise a, RealFloat a) ⇒ Semiring (Log a) where
   {-# Inline times #-}
   {-# Inline zero  #-}
   {-# Inline one   #-}
-
-
 
