@@ -41,18 +41,35 @@ instance LogDomain Double where
 
 
 -- | @log-sum-exp@ for streams, without incurring examining the stream twice,
--- but with the potential for numeric problems.
+-- but with the potential for numeric problems. In pricinple, the numeric error
+-- of this function should be better than individual binary function
+-- application and worse than an optimized @sum@ function.
+--
+-- Needs to be written in direct style, as otherwise any constructors (to tell
+-- us if we collected two elements already) remain.
 
-lseStream ∷ (a → a → a) → a → SM.Stream m a → a
-{-# Inline lseStream #-}
-lseStream mplus mzero = finalize . SM.foldl' go (LSEzero mzero) where
-  go (LSEzero !z   ) x = LSEone x
---  go (LSEone  !o   ) x = LSEacc (o x
---  go (LSEtwo  !o !t) x = LSEacc (max o t) 
+logsumexpS
+  ∷ (Monad m, Ord a, Num a, Floating a)
+  ⇒ SM.Stream m a → m a
+{-# Inline logsumexpS #-}
+logsumexpS (SM.Stream step s0) = lseLoop0 SM.SPEC s0
+  where
+    lseLoop0 !_ s = step s >>= \case
+      SM.Done        → return 0
+      SM.Skip    s0' → lseLoop0 SM.SPEC s0'
+      SM.Yield x s1  → lseLoop1 SM.SPEC x s1
+    lseLoop1 !_ x s = step s >>= \case
+      SM.Done        → return x
+      SM.Skip    s1' → lseLoop1 SM.SPEC x s1'
+      SM.Yield y sA  → let !m = max x y in lseLoopAcc SM.SPEC m (exp (x-m) + exp (y-m)) sA
+    lseLoopAcc !_ !m !acc s = step s >>= \case
+      SM.Done        → return $ m + log acc
+      SM.Skip    sA' → lseLoopAcc SM.SPEC m acc sA'
+      SM.Yield z sA' → lseLoopAcc SM.SPEC m (acc + exp (z-m)) sA'
 
-data LSE a
-  = LSEzero
-  | LSEone !a
---  | LSEtwo !a !a
-  | LESacc !a !a
+
+
+-- testlse ∷ Double → IO Double
+-- {-# NoInline testlse #-}
+-- testlse frm = logsumexpS (+) 0 $ SM.enumFromTo frm (frm+10)
 
