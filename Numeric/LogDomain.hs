@@ -43,6 +43,33 @@ instance LogDomain Double where
 
 
 
+-- | This is similar to 'Numeric.Log.sum' but requires only one pass over the
+-- data. It will be useful if the first two elements in the stream are large.
+-- If the user has some control over how the stream is generated, this function
+-- might show better performance than 'Numeric.Log.sum' and better numeric
+-- stability than 'fold 0 (+)'
+
+sumS
+  ∷ (Monad m, Ord a, Precise a, RealFloat a, Show a)
+  ⇒ SM.Stream m (Log a)
+  → m (Log a)
+{-# Inline sumS #-}
+sumS (SM.Stream step s0) = sLoop0 SM.SPEC s0
+  where
+    sLoop0 !_ s = step s >>= \case
+      SM.Done       → return 0
+      SM.Skip    s0 → sLoop0 SM.SPEC   s0
+      SM.Yield x s1 → sLoop1 SM.SPEC x s1
+    sLoop1 !_ (Exp x) s = step s >>= \case
+      SM.Done       → return $ Exp x
+      SM.Skip    s1 → sLoop1 SM.SPEC (Exp x) s1
+      SM.Yield (Exp y) s2 → let m = max x y
+        in sLoop2 SM.SPEC m (1∷Int) (expm1 (x-m) + expm1 (y-m)) s2
+    sLoop2 _! m cnt acc s = step s >>= \case
+      SM.Done       → return $ Exp $ m + log1p (acc + fromIntegral cnt)
+      SM.Skip    s2 → sLoop2 SM.SPEC m cnt acc s2
+      SM.Yield (Exp x) s2 → sLoop2 SM.SPEC m (cnt+1) (acc + expm1 (x-m)) s2
+
 -- | @log-sum-exp@ for streams, without incurring examining the stream twice,
 -- but with the potential for numeric problems. In pricinple, the numeric error
 -- of this function should be better than individual binary function
