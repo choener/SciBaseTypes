@@ -48,6 +48,9 @@ instance LogDomain Double where
 -- If the user has some control over how the stream is generated, this function
 -- might show better performance than 'Numeric.Log.sum' and better numeric
 -- stability than 'fold 0 (+)'
+--
+-- TODO this needs to be benchmarked against @fold 0 (+)@, since in
+-- @DnaProteinAlignment@ @sumS@ seems to be slower!
 
 sumS
   ∷ (Monad m, Ord a, Precise a, RealFloat a, Show a)
