@@ -51,20 +51,22 @@ instance LogDomain Double where
 
 sumS
   ∷ (Monad m, Ord a, Precise a, RealFloat a, Show a)
-  ⇒ SM.Stream m (Log a)
+  ⇒ Log a → SM.Stream m (Log a)
   → m (Log a)
 {-# Inline sumS #-}
-sumS (SM.Stream step s0) = sLoop0 SM.SPEC s0
+sumS zero (SM.Stream step s0) = sLoop1 SM.SPEC zero s0
   where
-    sLoop0 !_ s = step s >>= \case
-      SM.Done       → return 0
-      SM.Skip    s0 → sLoop0 SM.SPEC   s0
-      SM.Yield x s1 → sLoop1 SM.SPEC x s1
+    -- we need to find the first @x@ that is not @(-1/0)@ to handle @x-m@
+    -- correctly. We loop @sLoop1@ until we have the first finite @y@ and use
+    -- that as the @m@ for @sLoop2@.
     sLoop1 !_ (Exp x) s = step s >>= \case
       SM.Done       → return $ Exp x
       SM.Skip    s1 → sLoop1 SM.SPEC (Exp x) s1
-      SM.Yield (Exp y) s2 → let m = max x y
-        in sLoop2 SM.SPEC m (1∷Int) (expm1 (x-m) + expm1 (y-m)) s2
+      SM.Yield (Exp y) s2
+        | isInfinite y → sLoop1 SM.SPEC (Exp $ max x y) s2  -- either (1/0) or (-1/0) are handled correctly
+        | otherwise    → sLoop2 SM.SPEC m (1∷Int) (expm1 (x-m) + expm1 (y-m)) s2
+        where m = max x y
+    -- from here on we are fine
     sLoop2 _! m cnt acc s = step s >>= \case
       SM.Done       → return $ Exp $ m + log1p (acc + fromIntegral cnt)
       SM.Skip    s2 → sLoop2 SM.SPEC m cnt acc s2
