@@ -126,7 +126,9 @@ instance (Ord x, Semiring x, NumericLimits x) ⇒ Semiring (MinPlus x) where
 -- | The tropical MaxPlus SemiRing. It maximizes over the sum.
 
 newtype MaxPlus x = MaxPlus { getMaxPlus ∷ x }
-  deriving (Eq, Ord, Read, Show, Bounded, Generic, Generic1, Num)
+  deriving newtype (Eq, Ord, Read, Show, Bounded, Generic, Num)
+
+instance Generic1 MaxPlus
 
 derivingUnbox "MaxPlus"
   [t| forall x . Unbox x ⇒ MaxPlus x → x |]  [| getMaxPlus |]  [| MaxPlus |]

@@ -54,6 +54,7 @@ common deps
                     , ConstraintKinds
                     , DataKinds
                     , DeriveGeneric
+                    , DerivingStrategies
                     , FlexibleContexts
                     , FlexibleInstances
                     , GeneralizedNewtypeDeriving
