@@ -42,7 +42,7 @@ common deps
                , lens                     >= 4.0
                , log-domain               >= 0.12
                , mtl                      >= 2.0
-               , semirings                >= 5.3
+               , semirings                >= 0.5
                , vector                   >= 0.10
                , vector-th-unbox          >= 0.2
   default-language:
