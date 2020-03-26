@@ -11,6 +11,7 @@ import Numeric.Log as NL
 import qualified Data.Vector.Fusion.Stream.Monadic as SM
 import qualified Data.Vector.Fusion.Util as SM
 import Debug.Trace
+import Numeric
 
 
 
@@ -53,7 +54,7 @@ instance LogDomain Double where
 -- @DnaProteinAlignment@ @sumS@ seems to be slower!
 
 sumS
-  ∷ (Monad m, Ord a, Precise a, RealFloat a, Show a)
+  ∷ (Monad m, Ord a, RealFloat a, Show a)
   ⇒ Log a → SM.Stream m (Log a)
   → m (Log a)
 {-# Inline sumS #-}

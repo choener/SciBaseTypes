@@ -46,7 +46,6 @@ deriving instance (Floating   x) ⇒ Floating   (Probability n x)
 deriving instance (Real       x) ⇒ Real       (Probability n x)
 deriving instance (RealFrac   x) ⇒ RealFrac   (Probability n x)
 deriving instance (RealFloat  x) ⇒ RealFloat  (Probability n x)
-deriving instance (Precise    x) ⇒ Precise    (Probability n x)
 
 instance ToJSON x ⇒ ToJSON (Probability n x) where
   toJSON = toJSON . getProb

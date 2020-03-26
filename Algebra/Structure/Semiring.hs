@@ -223,7 +223,7 @@ instance
 -- * Semiring on 'Numeric.Log'. This is an orphan instance, but it can't be
 -- helped much, unless we want to wrap into yet another newtype.
 
-instance (Precise a, RealFloat a) ⇒ Semiring (Log a) where
+instance RealFloat a => Semiring (Log a) where
   plus  = (+)
   times = (*)
   zero  = 0
