@@ -19,6 +19,8 @@ import GHC.Generics
 import GHC.Real (Ratio(..))
 import GHC.TypeLits
 
+import Data.Info
+
 import Algebra.Structure.Semiring
 import Numeric.Limits
 
@@ -87,6 +89,10 @@ instance (RatioTyConstant a, RatioTyConstant b) ⇒ RatioTyConstant (RTyTimes (a
 
 newtype Discretized (b ∷ k) = Discretized { getDiscretized ∷ Int }
   deriving (Eq,Ord,Generic,Show,Read)
+
+instance Info (Discretized b) where
+  -- TODO show @b@ information
+  info = show . getDiscretized
 
 fromUnknown ∷ Discretized Unknown → Discretized t
 {-# Inline fromUnknown #-}

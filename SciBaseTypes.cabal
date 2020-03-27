@@ -45,6 +45,8 @@ common deps
                , semirings                >= 0.5
                , vector                   >= 0.10
                , vector-th-unbox          >= 0.2
+               --
+               , DPutils                  == 0.1.0.*
   default-language:
     Haskell2010
   ghc-options:

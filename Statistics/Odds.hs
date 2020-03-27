@@ -14,6 +14,8 @@ import Data.Serialize (Serialize)
 import Data.Vector.Unboxed.Deriving
 import GHC.Generics (Generic)
 
+import Data.Info
+
 import Algebra.Structure.Semiring
 import Numeric.Discretized
 import Numeric.Limits
@@ -69,4 +71,7 @@ instance (NumericLimits (Discretized t)) ⇒ NumericLimits (DiscLogOdds t) where
   {-# Inline minFinite #-}
   maxFinite = DiscLogOdds maxFinite
   {-# Inline maxFinite #-}
+
+instance Info (DiscLogOdds t) where
+  info = info . getDiscLogOdds
 

@@ -20,6 +20,8 @@ import GHC.Generics
 import Numeric.Log
 import Unsafe.Coerce
 
+import Data.Info
+
 import Numeric.Limits
 
 
@@ -146,6 +148,9 @@ instance (FromJSON x) ⇒ FromJSON (MaxPlus x) where
 instance NumericLimits x ⇒ NumericLimits (MaxPlus x) where
   minFinite = MaxPlus minFinite
   maxFinite = MaxPlus maxFinite
+
+instance Info x => Info (MaxPlus x) where
+  info = info . getMaxPlus
 
 -- |
 --
