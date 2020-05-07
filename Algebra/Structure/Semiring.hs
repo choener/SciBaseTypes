@@ -53,7 +53,8 @@ infixl 7 ⊗
 -- | The Viterbi SemiRing. It maximizes over the product.
 
 newtype Viterbi x = Viterbi { getViterbi ∷ x }
-  deriving (Eq, Ord, Read, Show, Bounded, Generic, Generic1, Num)
+  deriving stock (Eq, Ord, Read, Show, Bounded, Generic, Generic1)
+  deriving newtype (Num)
 
 derivingUnbox "Viterbi"
   [t| forall x . Unbox x ⇒ Viterbi x → x |]  [| getViterbi |]  [| Viterbi |]
@@ -90,7 +91,8 @@ instance (Ord x, Semiring x) ⇒ Semiring (Viterbi x) where
 -- | The tropical MinPlus SemiRing. It minimizes over the sum.
 
 newtype MinPlus x = MinPlus { getMinPlus ∷ x }
-  deriving (Eq, Ord, Read, Show, Bounded, Generic, Generic1, Num)
+  deriving stock (Eq, Ord, Read, Show, Bounded, Generic, Generic1)
+  deriving newtype (Num)
 
 derivingUnbox "MinPlus"
   [t| forall x . Unbox x ⇒ MinPlus x → x |]  [| getMinPlus |]  [| MinPlus |]
@@ -128,9 +130,8 @@ instance (Ord x, Semiring x, NumericLimits x) ⇒ Semiring (MinPlus x) where
 -- | The tropical MaxPlus SemiRing. It maximizes over the sum.
 
 newtype MaxPlus x = MaxPlus { getMaxPlus ∷ x }
-  deriving newtype (Eq, Ord, Read, Show, Bounded, Generic, Num)
-
-instance Generic1 MaxPlus
+  deriving stock (Eq, Ord, Read, Show, Bounded, Generic, Generic1)
+  deriving newtype (Num)
 
 derivingUnbox "MaxPlus"
   [t| forall x . Unbox x ⇒ MaxPlus x → x |]  [| getMaxPlus |]  [| MaxPlus |]
