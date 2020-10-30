@@ -40,6 +40,13 @@ infixl 7 ⊗
 (⊗) = times
 {-# Inline (⊗) #-}
 
+-- | 'times' but done @n@ times.
+
+nTimes :: Semiring a => Int -> a -> a
+nTimes k  _ | k<=0 = one
+nTimes 1  a = a
+nTimes k !a = a ⊗ nTimes (k-1) a
+
 
 
 -- * Newtype wrappers for 'SemiRing' that make the semiring to use explicit.
