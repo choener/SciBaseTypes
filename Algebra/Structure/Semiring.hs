@@ -41,6 +41,8 @@ infixl 7 ⊗
 {-# Inline (⊗) #-}
 
 -- | 'times' but done @n@ times.
+--
+-- TODO Include into type class to improve performance
 
 nTimes :: Semiring a => Int -> a -> a
 nTimes k  _ | k<=0 = one
