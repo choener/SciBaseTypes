@@ -88,7 +88,10 @@ instance (RatioTyConstant a, RatioTyConstant b) ⇒ RatioTyConstant (RTyTimes (a
 -- Discretized values, which probably just works.
 
 newtype Discretized (b ∷ k) = Discretized { getDiscretized ∷ Int }
-  deriving (Eq,Ord,Generic,Show,Read)
+  deriving (Eq,Ord,Generic,Read)
+
+instance Show (Discretized b) where
+  show (Discretized d) = show d
 
 instance Info (Discretized b) where
   -- TODO show @b@ information
