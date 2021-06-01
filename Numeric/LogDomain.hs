@@ -63,7 +63,7 @@ sumS zero (SM.Stream step s0) = sLoop1 SM.SPEC zero s0
     -- we need to find the first @x@ that is not @(-1/0)@ to handle @x-m@
     -- correctly. We loop @sLoop1@ until we have the first finite @y@ and use
     -- that as the @m@ for @sLoop2@.
-    sLoop1 !_ (Exp x) s = step s >>= \case
+    sLoop1 SM.SPEC (Exp x) s = step s >>= \case
       SM.Done       → return $ Exp x
       SM.Skip    s1 → sLoop1 SM.SPEC (Exp x) s1
       SM.Yield (Exp y) s2
@@ -71,7 +71,7 @@ sumS zero (SM.Stream step s0) = sLoop1 SM.SPEC zero s0
         | otherwise    → sLoop2 SM.SPEC m (1∷Int) (expm1 (x-m) + expm1 (y-m)) s2
         where m = max x y
     -- from here on we are fine
-    sLoop2 _! m cnt acc s = step s >>= \case
+    sLoop2 SM.SPEC m cnt acc s = step s >>= \case
       SM.Done       → return $ Exp $ m + log1p (acc + fromIntegral cnt)
       SM.Skip    s2 → sLoop2 SM.SPEC m cnt acc s2
       SM.Yield (Exp x) s2 → sLoop2 SM.SPEC m (cnt+1) (acc + expm1 (x-m)) s2
@@ -90,15 +90,15 @@ logsumexpS
 {-# Inline logsumexpS #-}
 logsumexpS (SM.Stream step s0) = lseLoop0 SM.SPEC s0
   where
-    lseLoop0 !_ s = step s >>= \case
+    lseLoop0 SM.SPEC s = step s >>= \case
       SM.Done        → return 0
       SM.Skip    s0' → lseLoop0 SM.SPEC s0'
       SM.Yield x s1  → lseLoop1 SM.SPEC x s1
-    lseLoop1 !_ x s = step s >>= \case
+    lseLoop1 SM.SPEC x s = step s >>= \case
       SM.Done        → return x
       SM.Skip    s1' → lseLoop1 SM.SPEC x s1'
       SM.Yield y sA  → let !m = max x y in lseLoopAcc SM.SPEC m (exp (x-m) + exp (y-m)) sA
-    lseLoopAcc !_ !m !acc s = step s >>= \case
+    lseLoopAcc SM.SPEC !m !acc s = step s >>= \case
       SM.Done        → return $ m + log acc
       SM.Skip    sA' → lseLoopAcc SM.SPEC m acc sA'
       SM.Yield z sA' → lseLoopAcc SM.SPEC m (acc + exp (z-m)) sA'
