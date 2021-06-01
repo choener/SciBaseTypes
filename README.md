@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/choener/SciBaseTypes.svg?branch=master)](https://travis-ci.org/choener/SciBaseTypes)
+![github action: master](https://github.com/choener/SciBaseTypes/actions/workflows/action.yml/badge.svg)
 
 # SciBaseTypes
 
