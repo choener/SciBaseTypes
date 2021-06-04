@@ -1,8 +1,9 @@
-0.2.0.0
+0.1.1.0
 -------
 
 - missing instances
 - knowDiscretized -> fromUnknown
+- updated DPutils dependency (Data.Info)
 
 0.1.0.0
 -------

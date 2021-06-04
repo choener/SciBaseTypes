@@ -1,6 +1,6 @@
 Cabal-version:  2.2
 Name:           SciBaseTypes
-Version:        0.1.0.1
+Version:        0.1.1.0
 License:        BSD-3-Clause
 License-file:   LICENSE
 Author:         Christian Hoener zu Siederdissen
@@ -46,7 +46,7 @@ common deps
                , vector                   >= 0.10
                , vector-th-unbox          >= 0.2
                --
-               , DPutils                  == 0.1.0.*
+               , DPutils                  == 0.1.1.*
   default-language:
     Haskell2010
   ghc-options:
