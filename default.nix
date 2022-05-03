@@ -1,10 +1,10 @@
 { mkDerivation, aeson, base, binary, cereal, deepseq, DPutils
-, hashable, lens, log-domain, mtl, QuickCheck, semirings, stdenv
+, hashable, lens, lib, log-domain, mtl, QuickCheck, semirings
 , tasty, tasty-quickcheck, tasty-th, vector, vector-th-unbox
 }:
 mkDerivation {
   pname = "SciBaseTypes";
-  version = "0.1.0.0";
+  version = "0.1.1.0";
   src = ./.;
   libraryHaskellDepends = [
     aeson base binary cereal deepseq DPutils hashable lens log-domain
@@ -21,5 +21,5 @@ mkDerivation {
   ];
   homepage = "https://github.com/choener/SciBaseTypes";
   description = "Base types and classes for statistics, sciences and humanities";
-  license = stdenv.lib.licenses.bsd3;
+  license = lib.licenses.bsd3;
 }
